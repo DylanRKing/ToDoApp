@@ -30,7 +30,7 @@ namespace ToDoApp.UI.Commands
 
         public void Execute(object? parameter)
         {
-            vm.ChangeWindowName();
+            //vm.ChangeWindowName();
         }
     }
 }

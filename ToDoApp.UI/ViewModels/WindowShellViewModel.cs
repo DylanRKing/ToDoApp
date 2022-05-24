@@ -1,32 +1,60 @@
-﻿using ToDoApp.UI.Commands;
+﻿using System;
+using System.Reflection;
+using ToDoApp.UI.Classes;
+using ToDoApp.UI.Commands;
 
 namespace ToDoApp.UI.ViewModels
 {
     public class WindowShellViewModel : MasterViewModel
     {
 
-        private string windowTitle = "To-Do App";
+        private string appTitle = "To Do App";
 
-        public string WindowTitle
+        public string AppTitle
         {
-            get { return windowTitle; }
-            set 
-            { 
-                windowTitle = value;
-                OnPropertyChanged("WindowTitle");
+            get { return appTitle; }
+            set
+            {
+                if (value != null && value != String.Empty)
+                {
+                    appTitle = value;
+                    OnPropertyChanged("AppTitle");
+                }
             }
         }
 
-        public ChangeNameCommand cNameCommand { get; set; }
+        private static string execPath = Assembly.GetEntryAssembly().Location;
+        private string appLogo = $@"{execPath}/../Images/Icons/LogoExample.png";
+
+        public string AppLogo
+        {
+            get { return appLogo; }
+            set
+            {
+                appLogo = value;
+                OnPropertyChanged("LogoImage");
+            }
+        }
+
+
+        private bool darkMode = true;
+
+        public bool DarkMode
+        {
+            get { return darkMode; }
+            set
+            {
+                darkMode = value;
+                OnPropertyChanged("DarkMode");
+                appTheme.DarkMode(DarkMode);
+            }
+        }
+
+        private AppTheme appTheme;
 
         public WindowShellViewModel()
         {
-            cNameCommand = new ChangeNameCommand(this);
-        }
-
-        public void ChangeWindowName()
-        {
-            WindowTitle = "Testing";
+            appTheme = new AppTheme();
         }
     }
 }

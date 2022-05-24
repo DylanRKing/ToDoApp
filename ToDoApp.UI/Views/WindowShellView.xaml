@@ -5,16 +5,22 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:ToDoApp.UI.ViewModels"
+        xmlns:p="clr-namespace:ToDoApp.UI.Properties"
         mc:Ignorable="d"
-        TextElement.Foreground="{DynamicResource MaterialDesignDarkForeground}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="Transparent"
         TextElement.FontWeight="Medium"
         TextElement.FontSize="14"
         FontFamily="{materialDesign:MaterialDesignFont}"
         WindowStyle="None"
         AllowsTransparency="True"
-        Height="{Binding WindowHeight, FallbackValue=450}" 
-        Width="{Binding WindowWidth, FallbackValue=800}">
+        Height="{Binding Source={x:Static p:Settings.Default}, Path=Height, Mode=OneWay}"
+        Width="{Binding Source={x:Static p:Settings.Default}, Path=Width, Mode=OneWay}"
+        WindowState="{Binding Source={x:Static p:Settings.Default}, Path=WindowState, Mode=TwoWay}"
+        Left="{Binding Source={x:Static p:Settings.Default}, Path=Left, Mode=TwoWay}"
+        Top="{Binding Source={x:Static p:Settings.Default}, Path=Top, Mode=TwoWay}"
+        ResizeMode="CanResize"
+        Closed="Window_Closed">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="32" 
@@ -24,113 +30,137 @@
 
     <Window.Resources>
 
-        <vm:WindowShellViewModel x:Key="vm"/>
+        <vm:WindowShellViewModel x:Key="vM"/>
 
         <Style TargetType="Border" x:Key="ShellStyle">
-            <Setter Property="Margin" Value="5 2 5 8"/>
+            <Setter Property="Background" Value="{DynamicResource MaterialDesignCardBackground}"/>
+            <Setter Property="Margin" Value="5 2 5 10"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=WindowState}" Value="Maximized">
-                    <Setter Property="Margin" Value="7"/>
+                    <Setter Property="Margin" Value="0"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
 
-    <Border Background="{DynamicResource MaterialDesignDarkBackground}" 
-            BorderThickness="0"
+    <Border x:Name="WindowContainer"
             Style="{StaticResource ShellStyle}"
-            DataContext="{StaticResource vm}">
+            DataContext="{StaticResource vM}">
 
         <Border.Effect>
-            <DropShadowEffect BlurRadius="5" Color="{DynamicResource MaterialDesignShadow}" Direction="-90" Opacity="0.6" ShadowDepth="3"/>
+            <DropShadowEffect BlurRadius="5" Color="#555" Direction="-90" Opacity="0.6" ShadowDepth="3"/>
         </Border.Effect>
-        
+
         <Grid>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32"/>
+                <RowDefinition  Height="*"/>
+            </Grid.RowDefinitions>
 
-                <materialDesign:ColorZone Mode="PrimaryMid"
-                                          Padding="0"
-                                          Grid.Row="0"
-                                          Height="32">
+            <Grid Grid.Row="0">
 
-                    <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="40"/>
-                        </Grid.ColumnDefinitions>
+                <Image Source="{Binding AppLogo, FallbackValue={x:Null}}" 
+                       MaxWidth="28" 
+                       MaxHeight="28"
+                       Margin="7 5"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
 
-                        <TextBlock Text="{Binding WindowTitle, FallbackValue='Window Title'}"
-                                   Grid.Column="0"
-                                   Style="{DynamicResource MaterialDesignHeadline6TextBlock}"
-                                   VerticalAlignment="Center"
-                                   Margin="10 0"
-                                   Foreground="{DynamicResource MaterialDesignDarkForeground}"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding AppTitle}"
+                           Style="{DynamicResource MaterialDesignBody1TextBlock}"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"/>
 
-                        <Button x:Name="WindowMinimiseButton"
-                                Grid.Column="2"
-                                Style="{StaticResource MaterialDesignFlatButton}"
-                                Content="{materialDesign:PackIcon Kind=WindowMinimize}"
-                                Padding="0"
-                                Margin="0"
-                                Foreground="{StaticResource MaterialDesignDarkForeground}"
-                                WindowChrome.IsHitTestVisibleInChrome="True"
-                                materialDesign:ButtonAssist.CornerRadius="0"
-                                Click="WindowMinimiseButton_Click"/>
+                <Button x:Name="WindowSettingsButton"
+                        Grid.Column="3"
+                        WindowChrome.IsHitTestVisibleInChrome="True"
+                        Style="{StaticResource MaterialWindowButton}">
+                    <materialDesign:PopupBox StaysOpen="True"
+                                             PlacementMode="BottomAndAlignCentres"
+                                             materialDesign:RippleAssist.IsDisabled="True" 
+                                             Width="40" 
+                                             HorizontalContentAlignment="Center" 
+                                             Height="32">
+                        <materialDesign:PopupBox.ToggleContent>
+                            <materialDesign:PackIcon Kind="Settings" 
+                                                     Foreground="{DynamicResource MaterialDesignBody}"
+                                                     Padding="0"
+                                                     HorizontalContentAlignment="Center"
+                                                     Margin="10 6"/>
+                        </materialDesign:PopupBox.ToggleContent>
+                        <Grid Margin="15 10">
 
-                        <Button x:Name="WindowMaximiseButton"
-                                Grid.Column="3"
-                                Style="{StaticResource MaterialDesignFlatButton}"
-                                Content="{materialDesign:PackIcon Kind=WindowMaximize}"
-                                Padding="0"
-                                Margin="0"
-                                Foreground="{StaticResource MaterialDesignDarkForeground}"
-                                WindowChrome.IsHitTestVisibleInChrome="True"
-                                materialDesign:ButtonAssist.CornerRadius="0"
-                                Visibility="Visible"
-                                Click="WindowMaximiseButton_Click"/>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="auto"/>
+                            </Grid.ColumnDefinitions>
 
-                        <Button x:Name="WindowRestoreButton"
-                                Grid.Column="3"
-                                Style="{StaticResource MaterialDesignFlatButton}"
-                                Content="{materialDesign:PackIcon Kind=WindowRestore}"
-                                Padding="0"
-                                Margin="0"
-                                Foreground="{StaticResource MaterialDesignDarkForeground}"
-                                WindowChrome.IsHitTestVisibleInChrome="True"
-                                materialDesign:ButtonAssist.CornerRadius="0"
-                                Visibility="Collapsed"
-                                Click="WindowRestoreButton_Click"/>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
 
-                        <Button x:Name="WindowCloseButton"
-                                Grid.Column="4"
-                                Style="{StaticResource MaterialDesignFlatButton}"
-                                Content="{materialDesign:PackIcon Kind=WindowClose}"
-                                Padding="0"
-                                Margin="0"
-                                Foreground="{StaticResource MaterialDesignDarkForeground}"
-                                WindowChrome.IsHitTestVisibleInChrome="True"
-                                materialDesign:ButtonAssist.CornerRadius="0"
-                                Click="WindowCloseButton_Click"/>
+                            <TextBlock Grid.Row="0"
+                                       Text="Options" 
+                                       Style="{DynamicResource MaterialDesignBody1TextBlock}"
+                                       Padding="0 0 0 10"/>
 
-                    </Grid>
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="0"
+                                       Text="Dark Mode"/>
+                            <ToggleButton Grid.Row="1" 
+                                          Grid.Column="1"
+                                          HorizontalAlignment="Center"
+                                          IsChecked="{Binding DarkMode, Mode=TwoWay}"/>
+                        </Grid>
+                    </materialDesign:PopupBox>
+                </Button>
 
-                </materialDesign:ColorZone>
+                <Button x:Name="WindowMinimiseButton"
+                        Grid.Column="4"
+                        WindowChrome.IsHitTestVisibleInChrome="True"
+                        Style="{StaticResource MaterialWindowButton}"
+                        Content="{materialDesign:PackIcon Kind=WindowMinimize}"/>
 
-            <!--<ContentPresenter Grid.Row="1"
-                              Content=""/>-->
+                <Button x:Name="WindowMaximiseButton"
+                        Grid.Column="5"
+                        WindowChrome.IsHitTestVisibleInChrome="True"
+                        Style="{StaticResource MaterialWindowButton}"
+                        Content="{materialDesign:PackIcon Kind=WindowMaximize}"
+                        Visibility="Visible"/>
+
+                <Button x:Name="WindowRestoreButton"
+                        Grid.Column="5"
+                        WindowChrome.IsHitTestVisibleInChrome="True"
+                        Style="{StaticResource MaterialWindowButton}"
+                        Content="{materialDesign:PackIcon Kind=WindowRestore}"
+                        Visibility="Collapsed"/>
+
+                <Button x:Name="WindowCloseButton"
+                        Grid.Column="6"
+                        WindowChrome.IsHitTestVisibleInChrome="True"
+                        Style="{StaticResource MaterialWindowCloseButton}"
+                        Content="{materialDesign:PackIcon Kind=WindowClose}"/>
+
+            </Grid>
+
             <Grid Grid.Row="1">
-                <Button Content="Testing" Command="{Binding cNameCommand}"/>
+                <ContentPresenter Content="{Binding Content}"/>
             </Grid>
 
         </Grid>
 
     </Border>
+
 </Window>
